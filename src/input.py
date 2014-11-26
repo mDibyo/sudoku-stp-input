@@ -4,6 +4,7 @@ __author__ = 'dibyo'
 from textwrap import dedent
 from itertools import combinations
 import sys
+import json
 
 
 def initialize_var(var):
@@ -15,8 +16,8 @@ def initialize_var(var):
 
     >>> print initialize_var("var")
     var_0, var_1, var_2, var_3 : BOOLEAN;
-    ASSERT(var_3 AND NOT(var_0 OR var_1 OR var_2));
-
+    ASSERT((var_3 AND NOT(var_0 OR var_1 OR var_2)) OR NOT(var_3));
+    <BLANKLINE>
     """
     stp_input = """\
     $_0, $_1, $_2, $_3 : BOOLEAN;
@@ -41,7 +42,7 @@ def equate_var(var, value):
     ASSERT(var_2);
     ASSERT(NOT(var_1));
     ASSERT(NOT(var_0));
-
+    <BLANKLINE>
     """
     value -= 1
     stp_input = ""
@@ -71,10 +72,10 @@ def inequate_vars(var1, var2):
     :param var2: the name of the second variable
     :return: the input string for inequating the two variables
 
-    >>> print inequate_vars("v1", "v2")
+    >>> print inequate_vars("v1", "v2") # doctest: +NORMALIZE_WHITESPACE
     ASSERT((v1_0 XOR v2_0) OR (v1_1 XOR v2_1) OR (v1_2 XOR v2_2) OR \
     (v1_3 XOR v2_3));
-
+    <BLANKLINE>
     """
     stp_input = "ASSERT("
     stp_input += "($1_0 XOR $2_0)" + " OR "
@@ -95,8 +96,8 @@ def create_independent_set(set):
     :param set: the set of variables that have different values
     :return: the input string for creating an independent set of variables
 
-    >>> set = map(lambda n: "v" + str(n), xrange(1, 5))
-    >>> print create_independent_set(set)
+    >>> set = map(lambda n: "v" + str(n), xrange(1, 6))
+    >>> print create_independent_set(set) # doctest: +NORMALIZE_WHITESPACE
     ASSERT((v1_0 XOR v2_0) OR (v1_1 XOR v2_1) OR (v1_2 XOR v2_2) OR \
     (v1_3 XOR v2_3));
     ASSERT((v1_0 XOR v3_0) OR (v1_1 XOR v3_1) OR (v1_2 XOR v3_2) OR \
@@ -117,7 +118,7 @@ def create_independent_set(set):
     (v3_3 XOR v5_3));
     ASSERT((v4_0 XOR v5_0) OR (v4_1 XOR v5_1) OR (v4_2 XOR v5_2) OR \
     (v4_3 XOR v5_3));
-
+    <BLANKLINE>
     """
     stp_input = ""
     for var1, var2 in combinations(set, 2):
@@ -126,10 +127,23 @@ def create_independent_set(set):
 
 
 def do_nothing():
+    """ Does nothing. This is used to add empty lines to the input
+
+    :return: the input string for doing nothing ie. "\n"
+    """
     return "\n"
 
 
 def get_variable_name(i, j):
+    """ Returns a variable name for the given indices.
+
+    :param i: the first index
+    :param j: the second index
+    :return: the variable name
+
+    >>> print get_variable_name(2, 5)
+    v25
+    """
     return "v%d%d" % (i, j)
 
 
@@ -140,16 +154,16 @@ def input_puzzle(puzzle_def):
     :return: the input string for initializing the puzzle
 
     >>> puzzle_def = [[0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-                      [0, 0, 0, 0, 0, 3, 0, 8, 5 ],
-                      [0, 0, 1, 0, 2, 0, 0, 0, 0 ],
-                      [0, 0, 0, 5, 0, 7, 0, 0, 0 ],
-                      [0, 0, 4, 0, 0, 0, 1, 0, 0 ],
-                      [0, 9, 0, 0, 0, 0, 0, 0, 0 ],
-                      [5, 0, 0, 0, 0, 0, 0, 7, 3 ],
-                      [0, 0, 2, 0, 1, 0, 0, 0, 0 ],
-                      [0, 0, 0, 0, 4, 0, 0, 0, 9 ] ]
-    >>> print input_puzzle(puzzle_def)
+    ...               [0, 0, 0, 0, 0, 3, 0, 8, 5 ],
+    ...               [0, 0, 1, 0, 2, 0, 0, 0, 0 ],
+    ...               [0, 0, 0, 5, 0, 7, 0, 0, 0 ],
+    ...               [0, 0, 4, 0, 0, 0, 1, 0, 0 ],
+    ...               [0, 9, 0, 0, 0, 0, 0, 0, 0 ],
+    ...               [5, 0, 0, 0, 0, 0, 0, 7, 3 ],
+    ...               [0, 0, 2, 0, 1, 0, 0, 0, 0 ],
+    ...               [0, 0, 0, 0, 4, 0, 0, 0, 9 ] ]
 
+    # >>> print input_puzzle(puzzle_def)
     """
     stp_input = ""
 
@@ -199,10 +213,25 @@ def input_puzzle(puzzle_def):
 
 
 def main(puzzle_def, input_file):
+    r"""
+    :param puzzle_def: json string containing the puzzle to be solved
+    :param input_file: the name of the file in which the input string for the
+        stp solver must be saved
+    :return: None
+
+    >>> puzzle_def = "[[0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 3, 0, 8, 5\
+    ... ], [0, 0, 1, 0, 2, 0, 0, 0, 0], [0, 0, 0, 5, 0, 7, 0, 0, 0], [0, 0, 4,\
+    ... 0, 0, 0, 1, 0, 0], [0, 9, 0, 0, 0, 0, 0, 0, 0], [5, 0, 0, 0, 0, 0, 0, \
+    ... 7, 3], [0, 0, 2, 0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 4, 0, 0, 0, 9]]"
+    >>> puzzle_def = json.loads(puzzle_def)
+
+    # >>> main(puzzle_def, 'input.in')
+    """
+    puzzle_def = json.loads(puzzle_def)
     with open(input_file, 'w') as f:
         f.write(input_puzzle(puzzle_def))
 
 
 if __name__ == "__main__":
-    if sys.argc >= 3:
+    if len(sys.argv) >= 3:
         main(sys.argv[1], sys.argv[2])
