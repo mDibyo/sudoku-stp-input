@@ -1,4 +1,6 @@
-from __future__ import division
+__author__ = 'dibyo'
+
+
 from textwrap import dedent
 from itertools import combinations
 import sys
