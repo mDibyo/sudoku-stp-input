@@ -18,7 +18,7 @@ def initialize_var(var):
     """
     stp_input = """\
     $_0, $_1, $_2, $_3 : BOOLEAN;
-    ASSERT($_3 AND NOT($_0 OR $_1 OR $_2));
+    ASSERT(($_3 AND NOT($_0 OR $_1 OR $_2)) OR NOT($_3));
     """
 
     stp_input = stp_input.replace('$', var)
@@ -136,6 +136,18 @@ def input_puzzle(puzzle_def):
 
     :param puzzle_def: the puzzle represented as a 9x9 matrix
     :return: the input string for initializing the puzzle
+
+    >>> puzzle_def = [[0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+                      [0, 0, 0, 0, 0, 3, 0, 8, 5 ],
+                      [0, 0, 1, 0, 2, 0, 0, 0, 0 ],
+                      [0, 0, 0, 5, 0, 7, 0, 0, 0 ],
+                      [0, 0, 4, 0, 0, 0, 1, 0, 0 ],
+                      [0, 9, 0, 0, 0, 0, 0, 0, 0 ],
+                      [5, 0, 0, 0, 0, 0, 0, 7, 3 ],
+                      [0, 0, 2, 0, 1, 0, 0, 0, 0 ],
+                      [0, 0, 0, 0, 4, 0, 0, 0, 9 ] ]
+    >>> print input_puzzle(puzzle_def)
+
     """
     stp_input = ""
 
@@ -190,4 +202,5 @@ def main(puzzle_def, input_file):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2])
+    if sys.argc >= 3:
+        main(sys.argv[1], sys.argv[2])
