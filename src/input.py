@@ -110,18 +110,63 @@ def create_independent_set(set):
     return stp_input
 
 
+def do_nothing():
+    return "\n"
+
+
+def get_variable_name(i, j):
+    return "v%d%d" % (i, j)
+
+
 def input_puzzle(puzzle_def):
     """ Create the STP input for a given sudoku puzzle and return it
 
     :param puzzle_def: the puzzle represented as a 9x9 matrix
     :return: the input string for initializing the puzzle
     """
+    stp_input = ""
+
+    # Initialize all variables (boxes) in the puzzle
+    for i in range(9):
+        for j in range(9):
+            stp_input += initialize_var(get_variable_name(i, j))
+            stp_input += do_nothing()
+
+    stp_input += do_nothing()
+    # Set up variables that are already known
+    for i in range(9):
+        for j in range(9):
+            if puzzle_def[i][j]:
+                stp_input += equate_var(get_variable_name(i, j),
+                                        puzzle_def[i][j])
+                stp_input += do_nothing()
+
+    stp_input += do_nothing()
+    stp_input += do_nothing()
+
+    # Set up all rules of the puzzle
+    # 1: Set up rows
+    for row in range(9):
+        set = map(lambda column: get_variable_name(row, column),
+                  range(9))
+        stp_input += create_independent_set(set)
+
+    stp_input += do_nothing()
+    # 2: Set up columns
+    for column in range(9):
+        set = map(lambda row: get_variable_name(row, column),
+                  range(9))
+        stp_input += create_independent_set(set)
+
+    stp_input += do_nothing()
+    # 3: Set up smaller squares
     pass
 
 
-def main(puzzle_def):
-    return input_puzzle(puzzle_def)
+def main(puzzle_def, input_file):
+    with open(input_file, 'w') as f:
+        f.write(input_puzzle(puzzle_def))
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    main(sys.argv[1], sys.argv[2])
