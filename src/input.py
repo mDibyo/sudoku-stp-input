@@ -48,6 +48,7 @@ def equate_var(var, value):
         if val:
             return "ASSERT(%s);\n" % token
         return "ASSERT(NOT(%s));\n" % token
+
     stp_input += assign_value("$_3", value // 8)
     value %= 8
     stp_input += assign_value("$_2", value // 4)
@@ -69,7 +70,8 @@ def inequate_vars(var1, var2):
     :return: the input string for inequating the two variables
 
     >>> print inequate_vars("v1", "v2")
-    ASSERT((v1_0 XOR v2_0) OR (v1_1 XOR v2_1) OR (v1_2 XOR v2_2) OR (v1_3 XOR v2_3));
+    ASSERT((v1_0 XOR v2_0) OR (v1_1 XOR v2_1) OR (v1_2 XOR v2_2) OR \
+    (v1_3 XOR v2_3));
 
     """
     stp_input = "ASSERT("
@@ -91,18 +93,29 @@ def create_independent_set(set):
     :param set: the set of variables that have different values
     :return: the input string for creating an independent set of variables
 
-    >>> set = map(lambda n: "so" + str(n), range(1, 5))
+    >>> set = map(lambda n: "v" + str(n), xrange(1, 5))
     >>> print create_independent_set(set)
-    ASSERT((so1_0 XOR so2_0) OR (so1_1 XOR so2_1) OR (so1_2 XOR so2_2) OR (so1_3 XOR so2_3));
-    ASSERT((so1_0 XOR so3_0) OR (so1_1 XOR so3_1) OR (so1_2 XOR so3_2) OR (so1_3 XOR so3_3));
-    ASSERT((so1_0 XOR so4_0) OR (so1_1 XOR so4_1) OR (so1_2 XOR so4_2) OR (so1_3 XOR so4_3));
-    ASSERT((so1_0 XOR so5_0) OR (so1_1 XOR so5_1) OR (so1_2 XOR so5_2) OR (so1_3 XOR so5_3));
-    ASSERT((so2_0 XOR so3_0) OR (so2_1 XOR so3_1) OR (so2_2 XOR so3_2) OR (so2_3 XOR so3_3));
-    ASSERT((so2_0 XOR so4_0) OR (so2_1 XOR so4_1) OR (so2_2 XOR so4_2) OR (so2_3 XOR so4_3));
-    ASSERT((so2_0 XOR so5_0) OR (so2_1 XOR so5_1) OR (so2_2 XOR so5_2) OR (so2_3 XOR so5_3));
-    ASSERT((so3_0 XOR so4_0) OR (so3_1 XOR so4_1) OR (so3_2 XOR so4_2) OR (so3_3 XOR so4_3));
-    ASSERT((so3_0 XOR so5_0) OR (so3_1 XOR so5_1) OR (so3_2 XOR so5_2) OR (so3_3 XOR so5_3));
-    ASSERT((so4_0 XOR so5_0) OR (so4_1 XOR so5_1) OR (so4_2 XOR so5_2) OR (so4_3 XOR so5_3));
+    ASSERT((v1_0 XOR v2_0) OR (v1_1 XOR v2_1) OR (v1_2 XOR v2_2) OR \
+    (v1_3 XOR v2_3));
+    ASSERT((v1_0 XOR v3_0) OR (v1_1 XOR v3_1) OR (v1_2 XOR v3_2) OR \
+    (v1_3 XOR v3_3));
+    ASSERT((v1_0 XOR v4_0) OR (v1_1 XOR v4_1) OR (v1_2 XOR v4_2) OR \
+    (v1_3 XOR v4_3));
+    ASSERT((v1_0 XOR v5_0) OR (v1_1 XOR v5_1) OR (v1_2 XOR v5_2) OR \
+    (v1_3 XOR v5_3));
+    ASSERT((v2_0 XOR v3_0) OR (v2_1 XOR v3_1) OR (v2_2 XOR v3_2) OR \
+    (v2_3 XOR v3_3));
+    ASSERT((v2_0 XOR v4_0) OR (v2_1 XOR v4_1) OR (v2_2 XOR v4_2) OR \
+    (v2_3 XOR v4_3));
+    ASSERT((v2_0 XOR v5_0) OR (v2_1 XOR v5_1) OR (v2_2 XOR v5_2) OR \
+    (v2_3 XOR v5_3));
+    ASSERT((v3_0 XOR v4_0) OR (v3_1 XOR v4_1) OR (v3_2 XOR v4_2) OR \
+    (v3_3 XOR v4_3));
+    ASSERT((v3_0 XOR v5_0) OR (v3_1 XOR v5_1) OR (v3_2 XOR v5_2) OR \
+    (v3_3 XOR v5_3));
+    ASSERT((v4_0 XOR v5_0) OR (v4_1 XOR v5_1) OR (v4_2 XOR v5_2) OR \
+    (v4_3 XOR v5_3));
+
     """
     stp_input = ""
     for var1, var2 in combinations(set, 2):
@@ -127,15 +140,15 @@ def input_puzzle(puzzle_def):
     stp_input = ""
 
     # Initialize all variables (boxes) in the puzzle
-    for i in range(9):
-        for j in range(9):
+    for i in xrange(9):
+        for j in xrange(9):
             stp_input += initialize_var(get_variable_name(i, j))
             stp_input += do_nothing()
 
     stp_input += do_nothing()
     # Set up variables that are already known
-    for i in range(9):
-        for j in range(9):
+    for i in xrange(9):
+        for j in xrange(9):
             if puzzle_def[i][j]:
                 stp_input += equate_var(get_variable_name(i, j),
                                         puzzle_def[i][j])
@@ -146,21 +159,29 @@ def input_puzzle(puzzle_def):
 
     # Set up all rules of the puzzle
     # 1: Set up rows
-    for row in range(9):
+    for row in xrange(9):
         set = map(lambda column: get_variable_name(row, column),
-                  range(9))
+                  xrange(9))
         stp_input += create_independent_set(set)
 
     stp_input += do_nothing()
     # 2: Set up columns
-    for column in range(9):
+    for column in xrange(9):
         set = map(lambda row: get_variable_name(row, column),
-                  range(9))
+                  xrange(9))
         stp_input += create_independent_set(set)
 
     stp_input += do_nothing()
     # 3: Set up smaller squares
-    pass
+    for square_row in xrange(3):
+        for square_column in xrange(3):
+            set = [get_variable_name(3*square_row + r, 3*square_column + c)
+                   for r in xrange(3) for c in xrange(3)]
+            stp_input += create_independent_set(set)
+
+    stp_input += do_nothing()
+
+    return stp_input
 
 
 def main(puzzle_def, input_file):
