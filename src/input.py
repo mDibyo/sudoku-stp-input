@@ -1,5 +1,7 @@
 from __future__ import division
 from textwrap import dedent
+from itertools import combinations
+import sys
 
 
 def initialize_var(var):
@@ -8,6 +10,11 @@ def initialize_var(var):
 
     :param var: the name given to the variable
     :return: the input string for initializing the variable
+
+    >>> print initialize_var("var")
+    var_0, var_1, var_2, var_3 : BOOLEAN;
+    ASSERT(var_3 AND NOT(var_0 OR var_1 OR var_2));
+
     """
     stp_input = """\
     $_0, $_1, $_2, $_3 : BOOLEAN;
@@ -26,6 +33,13 @@ def equate_var(var, value):
     :param name: the name of the variable
     :param value: the value to which the variable must be equated
     :return: the input string for equating the variable to value
+
+    >>> print equate_var("var", 5)
+    ASSERT(NOT(var_3));
+    ASSERT(var_2);
+    ASSERT(NOT(var_1));
+    ASSERT(NOT(var_0));
+
     """
     value -= 1
     stp_input = ""
@@ -47,16 +61,67 @@ def equate_var(var, value):
 
 
 def inequate_vars(var1, var2):
-    """ Inequate two variables so that they have different values
+    """ Inequate two variables so that they have different values in the
+    sudoku puzzle.
 
     :param var1: the name of the first variable
     :param var2: the name of the second variable
     :return: the input string for inequating the two variables
-    """
-    stp_input = """\
-    ASSERT((#_0 XOR $_0) OR (#_1 XOR $_1) OR (#_2 XOR $_2) OR (#_3 XOR $_3))
-    """
 
-    stp_input.replace("#", var1)
-    stp_input.replace("$", var2)
+    >>> print inequate_vars("v1", "v2")
+    ASSERT((v1_0 XOR v2_0) OR (v1_1 XOR v2_1) OR (v1_2 XOR v2_2) OR (v1_3 XOR v2_3));
+
+    """
+    stp_input = "ASSERT("
+    stp_input += "($1_0 XOR $2_0)" + " OR "
+    stp_input += "($1_1 XOR $2_1)" + " OR "
+    stp_input += "($1_2 XOR $2_2)" + " OR "
+    stp_input += "($1_3 XOR $2_3)"
+    stp_input += ");\n"
+
+    stp_input = stp_input.replace("$1", var1)
+    stp_input = stp_input.replace("$2", var2)
     return dedent(stp_input)
+
+
+def create_independent_set(set):
+    """ Create a set of up to 9 independent variables, ie. variables that
+    do not have the same value as any of the other variables in the set.
+
+    :param set: the set of variables that have different values
+    :return: the input string for creating an independent set of variables
+
+    >>> set = map(lambda n: "so" + str(n), range(1, 5))
+    >>> print create_independent_set(set)
+    ASSERT((so1_0 XOR so2_0) OR (so1_1 XOR so2_1) OR (so1_2 XOR so2_2) OR (so1_3 XOR so2_3));
+    ASSERT((so1_0 XOR so3_0) OR (so1_1 XOR so3_1) OR (so1_2 XOR so3_2) OR (so1_3 XOR so3_3));
+    ASSERT((so1_0 XOR so4_0) OR (so1_1 XOR so4_1) OR (so1_2 XOR so4_2) OR (so1_3 XOR so4_3));
+    ASSERT((so1_0 XOR so5_0) OR (so1_1 XOR so5_1) OR (so1_2 XOR so5_2) OR (so1_3 XOR so5_3));
+    ASSERT((so2_0 XOR so3_0) OR (so2_1 XOR so3_1) OR (so2_2 XOR so3_2) OR (so2_3 XOR so3_3));
+    ASSERT((so2_0 XOR so4_0) OR (so2_1 XOR so4_1) OR (so2_2 XOR so4_2) OR (so2_3 XOR so4_3));
+    ASSERT((so2_0 XOR so5_0) OR (so2_1 XOR so5_1) OR (so2_2 XOR so5_2) OR (so2_3 XOR so5_3));
+    ASSERT((so3_0 XOR so4_0) OR (so3_1 XOR so4_1) OR (so3_2 XOR so4_2) OR (so3_3 XOR so4_3));
+    ASSERT((so3_0 XOR so5_0) OR (so3_1 XOR so5_1) OR (so3_2 XOR so5_2) OR (so3_3 XOR so5_3));
+    ASSERT((so4_0 XOR so5_0) OR (so4_1 XOR so5_1) OR (so4_2 XOR so5_2) OR (so4_3 XOR so5_3));
+    """
+    stp_input = ""
+    for var1, var2 in combinations(set, 2):
+        stp_input += inequate_vars(var1, var2)
+    return stp_input
+
+
+def input_puzzle(puzzle_def):
+    """ Create the STP input for a given sudoku puzzle and return it
+
+    :param puzzle_def: the puzzle represented as a 9x9 matrix
+    :return: the input string for initializing the puzzle
+    """
+    pass
+
+
+def main(puzzle_def):
+    return input_puzzle(puzzle_def)
+
+
+if __name__ == "__main__":
+    main(sys.argv[1])
